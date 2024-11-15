@@ -33,5 +33,14 @@ def listaEmprestimos(emprestimos):
         print(f"ID Usuario: {emprestimo['fk_id_usuario']}")
         print("-" * 10)
 
+
+def criaEmprestimo(pk_id_emprestimo, data_emprestimo, data_devolucao_real, data_devolucao_prevista, fk_id_livro, fk_id_usuario, caminho_arquivo="emprestimos.txt"):
+    if os.path.exists(caminho_arquivo):
+        with open(caminho_arquivo, "a") as arquivo:
+            arquivo.write(f"{pk_id_emprestimo},{data_emprestimo},{data_devolucao_real},{data_devolucao_prevista},{fk_id_livro},{fk_id_usuario}\n")
+
+
+
 emprestimos = carrega_emprestimos()
+criaEmprestimo(3, 2024-14-11, None, 2024-20-11, 4, 5)
 listaEmprestimos(emprestimos)
