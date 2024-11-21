@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 caminho_arquivo = "emprestimos.txt"
 delimitador = ","
@@ -23,6 +24,7 @@ def carrega_emprestimos():
                 emprestimos[emprestimo["pk_id_emprestimo"]] = emprestimo
     return emprestimos
 
+
 def listaEmprestimos(emprestimos):
     for emprestimo in emprestimos.values():
         print(f"ID: {emprestimo['pk_id_emprestimo']}")
@@ -40,7 +42,50 @@ def criaEmprestimo(pk_id_emprestimo, data_emprestimo, data_devolucao_real, data_
             arquivo.write(f"{pk_id_emprestimo},{data_emprestimo},{data_devolucao_real},{data_devolucao_prevista},{fk_id_livro},{fk_id_usuario}\n")
 
 
+def excluiEmprestimo(pk_id_emprestimo, caminho_arquivo="emprestimos.txt"):
+    if os.path.exists(caminho_arquivo):
+        emprestimos_atualizados = []
+        with open(caminho_arquivo, "r") as arquivo:
+            for linha in arquivo:
+                partes = linha.strip().split(delimitador)
+                id_emprestimo = int(partes[0])
+                if id_emprestimo != pk_id_emprestimo:
+                    emprestimos_atualizados.append(linha)
 
-emprestimos = carrega_emprestimos()
-criaEmprestimo(3, 2024-14-11, None, 2024-20-11, 4, 5)
+        salvaEmprestimo(emprestimos_atualizados, caminho_arquivo)
+
+
+def acabaEmprestimo(pk_id_emprestimo, caminho_arquivo="emprestimos.txt"):
+    if os.path.exists(caminho_arquivo):
+        emprestimos_atualizados = []
+        data_atual = datetime.now().strftime("%Y-%m-%d")
+        
+        with open(caminho_arquivo, "r") as arquivo:
+            for linha in arquivo:
+                partes = linha.strip().split(delimitador)
+                id_emprestimo = int(partes[0])
+                
+                if id_emprestimo == pk_id_emprestimo:
+                    partes[2] = data_atual
+                
+                emprestimos_atualizados.append(delimitador.join(partes))
+        
+        salvaEmprestimo(emprestimos_atualizados, caminho_arquivo)
+
+
+def salvaEmprestimo(emprestimos, caminho_arquivo="emprestimos.txt"):
+    with open(caminho_arquivo, "w") as arquivo:
+        for linha in emprestimos:
+            arquivo.write(linha + "\n")
+
+
+emprestimos = carrega_emprestimos() 
+
+criaEmprestimo(3, "2024-11-14", "None", "2024-11-20", 4, 5)
+
+emprestimos = carrega_emprestimos()  
+
 listaEmprestimos(emprestimos)
+
+
+
