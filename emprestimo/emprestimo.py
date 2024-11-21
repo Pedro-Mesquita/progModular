@@ -79,13 +79,5 @@ def salvaEmprestimo(emprestimos, caminho_arquivo="emprestimos.txt"):
             arquivo.write(linha + "\n")
 
 
-emprestimos = carrega_emprestimos() 
-
-criaEmprestimo(3, "2024-11-14", "None", "2024-11-20", 4, 5)
-
-emprestimos = carrega_emprestimos()  
-
-listaEmprestimos(emprestimos)
-
 
 
