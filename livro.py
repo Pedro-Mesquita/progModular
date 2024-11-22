@@ -3,7 +3,7 @@ import os
 ARQUIVO = "livros.txt"
 
 def inicializar_arquivo():
-    if not os.path.exists(ARQUIVO):
+    if os.path.exists(ARQUIVO):
         with open(ARQUIVO, 'w') as arquivo:
             arquivo.write("id,titulo,autor,editora,ano_publicacao,qtd_copias\n")
 
