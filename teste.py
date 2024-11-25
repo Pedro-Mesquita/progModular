@@ -1,14 +1,12 @@
 # Estrutura de diretórios:
 # biblioteca/
-# ├── main.py
+# ├── teste.py
 # ├── data/
-# │   ├── __init__.py
 # │   ├── usuarios.txt
 # │   ├── livros.txt
 # │   ├── emprestimos.txt
 # │   └── multas.txt
 # ├── modules/
-# │   ├── __init__.py
 # │   ├── usuarios.py
 # │   ├── livros.py
 # │   ├── emprestimos.py
