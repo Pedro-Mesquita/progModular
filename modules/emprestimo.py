@@ -3,9 +3,11 @@ from datetime import datetime
 
 caminho_arquivo = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'emprestimos.txt')
 delimitador = ","
+emprestimos = {}  
 
 
 def carrega_emprestimos():
+    global emprestimos
     emprestimos = {}
     if os.path.exists(caminho_arquivo):
         with open(caminho_arquivo, "r") as arquivo:
@@ -25,7 +27,7 @@ def carrega_emprestimos():
     return emprestimos
 
 
-def listaEmprestimos(emprestimos):
+def listaEmprestimos():
     for emprestimo in emprestimos.values():
         print(f"ID: {emprestimo['pk_id_emprestimo']}")
         print(f"Data Emprestimo: {emprestimo['data_emprestimo']}")
@@ -36,46 +38,34 @@ def listaEmprestimos(emprestimos):
         print("-" * 10)
 
 
-def criaEmprestimo(pk_id_emprestimo, data_emprestimo, data_devolucao_real, data_devolucao_prevista, fk_id_livro, fk_id_usuario, caminho_arquivo="emprestimos.txt"):
-    if os.path.exists(caminho_arquivo):
-        with open(caminho_arquivo, "a") as arquivo:
-            arquivo.write(f"{pk_id_emprestimo},{data_emprestimo},{data_devolucao_real},{data_devolucao_prevista},{fk_id_livro},{fk_id_usuario}\n")
+def criaEmprestimo(pk_id_emprestimo, data_emprestimo, data_devolucao_real, data_devolucao_prevista, fk_id_livro, fk_id_usuario):
+    global emprestimos
+    novo_emprestimo = {
+        "pk_id_emprestimo": pk_id_emprestimo,
+        "data_emprestimo": data_emprestimo,
+        "data_devolucao_real": data_devolucao_real,
+        "data_devolucao_prevista": data_devolucao_prevista,
+        "fk_id_livro": fk_id_livro,
+        "fk_id_usuario": fk_id_usuario
+    }
+
+    emprestimos[pk_id_emprestimo] = novo_emprestimo
+
+def excluiEmprestimo(pk_id_emprestimo):
+    global emprestimos
+    if pk_id_emprestimo in emprestimos:
+        del emprestimos[pk_id_emprestimo]
 
 
-def excluiEmprestimo(pk_id_emprestimo, caminho_arquivo="emprestimos.txt"):
-    if os.path.exists(caminho_arquivo):
-        emprestimos_atualizados = []
-        with open(caminho_arquivo, "r") as arquivo:
-            for linha in arquivo:
-                partes = linha.strip().split(delimitador)
-                id_emprestimo = int(partes[0])
-                if id_emprestimo != pk_id_emprestimo:
-                    emprestimos_atualizados.append(linha)
+def acabaEmprestimo(pk_id_emprestimo):
+    global emprestimos
+    if pk_id_emprestimo in emprestimos:
+        emprestimos[pk_id_emprestimo]["data_devolucao_real"] = datetime.now().strftime("%Y-%m-%d")
 
 
 
-def acabaEmprestimo(pk_id_emprestimo, caminho_arquivo="emprestimos.txt"):
-    if os.path.exists(caminho_arquivo):
-        emprestimos_atualizados = []
-        data_atual = datetime.now().strftime("%Y-%m-%d")
-        
-        with open(caminho_arquivo, "r") as arquivo:
-            for linha in arquivo:
-                partes = linha.strip().split(delimitador)
-                id_emprestimo = int(partes[0])
-                
-                if id_emprestimo == pk_id_emprestimo:
-                    partes[2] = data_atual
-                
-                emprestimos_atualizados.append(delimitador.join(partes))
-        
-
-
-def salvaEmprestimo(emprestimos, caminho_arquivo="emprestimos.txt"):
+def salvaEmprestimos():
     with open(caminho_arquivo, "w") as arquivo:
-        for linha in emprestimos:
-            arquivo.write(linha + "\n")
-
-
-
-
+        for emprestimo in emprestimos.values():
+            linha = f"{emprestimo['pk_id_emprestimo']},{emprestimo['data_emprestimo']},{emprestimo['data_devolucao_real']},{emprestimo['data_devolucao_prevista']},{emprestimo['fk_id_livro']},{emprestimo['fk_id_usuario']}\n"
+            arquivo.write(linha)

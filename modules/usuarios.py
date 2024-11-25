@@ -4,10 +4,10 @@ import random
 
 ARQUIVO_USUARIOS = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'usuarios.txt')
 
-# Lista de usuários
+
 usuarios_db = []
 
-# Carrega usuários do arquivo TXT ao iniciar a aplicação
+
 def carregar_usuarios():
     global usuarios_db
     if os.path.exists(ARQUIVO_USUARIOS):
@@ -24,7 +24,7 @@ def carregar_usuarios():
                 usuarios_db.append(usuario)
             print("Usuários carregados do arquivo:", usuarios_db)
 
-# Salva usuários no arquivo TXT
+
 def salvar_usuarios():
     with open(ARQUIVO_USUARIOS, 'w') as f:
         for usuario in usuarios_db:
@@ -32,7 +32,6 @@ def salvar_usuarios():
             f.write(linha)
         print("Usuários salvos no arquivo TXT.")
 
-# Classe Usuario
 class Usuario:
     def __init__(self, pk_id_usuario, nome, endereco, telefone, email):
         self.pk_id_usuario = pk_id_usuario
@@ -50,14 +49,13 @@ class Usuario:
             "email": self.email
         }
 
-# Gera um ID único
 def gerar_id_unico():
     while True:
         pk_id_usuario = random.randint(1000, 9999)
         if all(user['pk_id_usuario'] != pk_id_usuario for user in usuarios_db):
             return pk_id_usuario
 
-# Funções para cada ação
+
 
 def listar_usuarios():
     if not usuarios_db:
@@ -176,6 +174,6 @@ def menu_principal():
         else:
             print("Opção inválida. Tente novamente.")
 
-# Executa o menu principal
+
 if __name__ == '__main__':
     menu_principal()

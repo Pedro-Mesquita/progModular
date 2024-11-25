@@ -20,6 +20,7 @@
 import os
 import random
 from datetime import datetime
+
 from modules.multa import *
 from modules.usuarios import *
 from modules.emprestimo import *
@@ -37,7 +38,6 @@ def converter_encoding(arquivo_entrada, arquivo_saida, origem='utf8', destino='u
 
 
 def backup_sistema():
-    """Cria backup dos arquivos do sistema com conversão para UTF-32"""
     arquivos = ['usuarios.txt', 'emprestimos.txt', 'multas.txt', 'livros.txt']
     for arquivo in arquivos:
         input_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'progModular/data', arquivo)
@@ -47,7 +47,6 @@ def backup_sistema():
         print(f"Backup criado: {backup_nome}")
 
 def restaurar_backup():
-    """Restaura backup dos arquivos convertendo de UTF-32 para UTF-8"""
     arquivos = ['usuarios.txt', 'emprestimos.txt', 'multas.txt', 'livros.txt']
     for arquivo in arquivos:
         backup_nome = f"backup_{arquivo}.utf32"
@@ -137,22 +136,21 @@ def menu_emprestimos():
         opcao = input("\nEscolha uma opção: ")
         
         if opcao == '1':
-            pk_id_emprestimo = random.randint(1000, 9999)
-            fk_id_livro = int(input("ID do livro: "))
-            fk_id_usuario = int(input("ID do usuário: "))
+            try:
+                data_atual = datetime.now().strftime("%Y-%m-%d")
+                pk_id_emprestimo = random.randint(1000, 9999)
+                fk_id_livro = int(input("ID do livro: "))
+                fk_id_usuario = int(input("ID do usuário: "))
+                data_devolucao = input("Data de devolução prevista (AAAA-MM-DD): ")
+                
+                if criaEmprestimo(pk_id_emprestimo, data_atual,"None", data_devolucao, fk_id_livro, fk_id_usuario):
+                    print("Empréstimo realizado com sucesso!")
+            except ValueError:
+                print("Erro: Dados inválidos fornecidos")
             
-            if verificar_quantidade(fk_id_livro) > 0:
-                data_emprestimo = datetime.now().strftime("%Y-%m-%d")
-                data_devolucao_prevista = input("Data de devolução prevista (AAAA-MM-DD): ")
-                criaEmprestimo(pk_id_emprestimo, data_emprestimo, "None", 
-                             data_devolucao_prevista, fk_id_livro, fk_id_usuario)
-                print("Empréstimo realizado com sucesso!")
-            else:
-                print("Livro não disponível para empréstimo!")
         
         elif opcao == '2':
-            emprestimos = carrega_emprestimos()
-            listaEmprestimos(emprestimos)
+            listaEmprestimos()
         
         elif opcao == '3':
             pk_id_emprestimo = int(input("ID do empréstimo: "))
@@ -215,9 +213,11 @@ def menu_multas():
             print("Opção inválida!")
 
 def menu_principal():
-    # Inicialização
+    
     carregar_usuarios()
-    inicializar_arquivo()  # Initialize livros.txt
+    inicializar_arquivo()  
+    carrega_emprestimos()
+    carrega_multas()
     
     while True:
         print("\n=== Sistema de Biblioteca ===")
@@ -247,6 +247,8 @@ def menu_principal():
             print("Finalizando sistema...")
             salvar_usuarios()
             salvar_dados() #livros
+            salvaEmprestimos()
+            salva_multas()
 
             print("Dados salvos. Sistema finalizado.")
             break

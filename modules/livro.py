@@ -4,7 +4,7 @@ from datetime import datetime
 
 ARQUIVO = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'livros.txt')
 
-# Lista de livros em memória
+
 livros_db = []
 
 def inicializar_arquivo():
@@ -12,10 +12,10 @@ def inicializar_arquivo():
     if os.path.exists(ARQUIVO):
         with open(ARQUIVO, 'r') as arquivo:
             linhas = arquivo.readlines()
-            if len(linhas) > 1:  # Se o arquivo tem mais que o cabeçalho
-                for linha in linhas[1:]:  # Pula o cabeçalho e processa as outras linhas
+            if len(linhas) > 1:  
+                for linha in linhas[1:]:  
                     dados = linha.strip().split(',')
-                    if len(dados) == 7:  # Verifica se há exatamente 6 campos
+                    if len(dados) == 7:  
                         pk_id_livro, titulo, autor, editora, ano_publicacao, qtd_copias, data = dados
                         livro = {
                             "pk_id_livro": int(pk_id_livro),
@@ -38,15 +38,14 @@ def inicializar_arquivo():
 
 
 def carregar_dados():
-    """Carrega dados do arquivo para a memória"""
     global livros_db
     try:
         with open(ARQUIVO, 'r', encoding='utf-8') as arquivo:
-            next(arquivo)  # Pula o cabeçalho
+            next(arquivo)  
             for linha in arquivo:
                 try:
                     dados = linha.strip().split(',')
-                    if len(dados) >= 7:  # Verifica se tem todos os campos necessários
+                    if len(dados) >= 7:  
                         livro = {
                             "pk_id_livro": int(dados[0]),
                             "titulo": dados[1],
@@ -67,27 +66,23 @@ def carregar_dados():
         exit(1)
 
 def gerar_id_unico():
-    """Gera ID único para novo livro"""
     while True:
         pk_id_livro = random.randint(1000, 9999)
         if not any(livro['pk_id_livro'] == pk_id_livro for livro in livros_db):
             return pk_id_livro
 
 def validar_ano(ano):
-    """Valida o ano de publicação"""
     ano_atual = datetime.now().year
     if not (1000 <= ano <= ano_atual):
         raise ValueError(f"Ano deve estar entre 1000 e {ano_atual}")
     return ano
 
 def validar_quantidade(qtd):
-    """Valida a quantidade de cópias"""
     if qtd < 0:
         raise ValueError("Quantidade não pode ser negativa")
     return qtd
 
 def cadastrar_livro():
-    """Cadastra novo livro no sistema"""
     global livros_db
     print("\n=== CADASTRO DE LIVRO ===")
     try:
@@ -135,11 +130,10 @@ def cadastrar_livro():
         print(f"\nErro ao cadastrar livro: {e}")
 
 def listar_livros():
-    """Lista todos os livros cadastrados"""
     print("\n=== LISTA DE LIVROS ===")
     if not livros_db:
         print("\nNenhum livro cadastrado no sistema.")
-        return []  # Retorne uma lista vazia se não houver livros
+        return [] 
     
     print(f"\nTotal de livros cadastrados: {len(livros_db)}")
     
@@ -157,10 +151,9 @@ def listar_livros():
         except KeyError as e:
             print(f"Erro ao exibir livro: dados inconsistentes. Erro: {e}")
     
-    return livros_db  # Retorne a lista de livros no final
+    return livros_db  
 
 def buscar_livros():
-    """Busca livros por diferentes critérios"""
     print("\n=== BUSCA DE LIVROS ===")
     campos_validos = ['titulo', 'autor', 'editora']
     
@@ -201,11 +194,9 @@ def buscar_livros():
         print("="*50)
 
 def atualizar_livro():
-    """Atualiza informações de um livro"""
     global livros_db
     print("\n=== ATUALIZAÇÃO DE LIVRO ===")
     
-    # Lista os livros primeiro
     listar_livros()
     if not livros_db:
         return
@@ -261,7 +252,6 @@ def atualizar_livro():
         print(f"Erro ao atualizar livro: {e}")
 
 def remover_livro():
-    """Remove um livro do sistema"""
     global livros_db
     print("\n=== REMOÇÃO DE LIVRO ===")
     listar_livros()
@@ -283,7 +273,6 @@ def remover_livro():
 
 
 def verificar_quantidade():
-    """Verifica a quantidade disponível de um livro"""
     print("\n=== VERIFICAÇÃO DE QUANTIDADE ===")
     
     try:
@@ -304,7 +293,6 @@ def verificar_quantidade():
         print("\nErro: ID deve ser um número!")
 
 def salvar_dados():
-    """Salva os dados no arquivo"""
     try:
         with open(ARQUIVO, 'w', encoding='utf-8') as arquivo:
             arquivo.write("id,titulo,autor,editora,ano_publicacao,qtd_copias,data_cadastro\n")
@@ -316,7 +304,6 @@ def salvar_dados():
         print(f"Erro ao salvar dados: {e}")
 
 def menu_principal():
-    """Exibe e gerencia o menu principal"""
     inicializar_arquivo()
 
     while True:
@@ -347,7 +334,7 @@ def menu_principal():
                 verificar_quantidade()
             elif opcao == '7':
                 print("\nSalvando dados e encerrando o programa...")
-                salvar_dados()  # Chama o salvamento apenas no encerramento
+                salvar_dados()
                 print("Programa encerrado.")
                 break
             else:
@@ -355,7 +342,7 @@ def menu_principal():
 
         except KeyboardInterrupt:
             print("\n\nPrograma interrompido pelo usuário.")
-            salvar_dados()  # Salva os dados se o programa for interrompido
+            salvar_dados() 
             break
         except Exception as e:
             print(f"\nErro inesperado: {e}")
