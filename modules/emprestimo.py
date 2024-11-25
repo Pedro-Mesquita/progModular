@@ -2,7 +2,6 @@ import os
 from datetime import datetime
 
 caminho_arquivo = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'emprestimos.txt')
-
 delimitador = ","
 
 
@@ -53,7 +52,6 @@ def excluiEmprestimo(pk_id_emprestimo, caminho_arquivo="emprestimos.txt"):
                 if id_emprestimo != pk_id_emprestimo:
                     emprestimos_atualizados.append(linha)
 
-        salvaEmprestimo(emprestimos_atualizados, caminho_arquivo)
 
 
 def acabaEmprestimo(pk_id_emprestimo, caminho_arquivo="emprestimos.txt"):
@@ -71,7 +69,6 @@ def acabaEmprestimo(pk_id_emprestimo, caminho_arquivo="emprestimos.txt"):
                 
                 emprestimos_atualizados.append(delimitador.join(partes))
         
-        salvaEmprestimo(emprestimos_atualizados, caminho_arquivo)
 
 
 def salvaEmprestimo(emprestimos, caminho_arquivo="emprestimos.txt"):
