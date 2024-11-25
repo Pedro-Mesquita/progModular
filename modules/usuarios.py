@@ -1,8 +1,8 @@
+import os
 import re
 import random
-import os
 
-ARQUIVO_USUARIOS = "usuarios.txt"
+ARQUIVO_USUARIOS = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'usuarios.txt')
 
 # Lista de usuários
 usuarios_db = []
