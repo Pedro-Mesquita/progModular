@@ -1,71 +1,57 @@
-class Livro:
+import os
 
-    def __init__(self, pk_id_livro, titulo, autor, editora, ano_publicacao, qtd_copias):
-        self.pk_id_livro = pk_id_livro
-        self.titulo = titulo
-        self.autor = autor
-        self.editora = editora
-        self.ano_publicacao = ano_publicacao
-        self.qtd_copias = qtd_copias
+ARQUIVO = "livros.txt"
 
-    def atualizar_informacoes(self, titulo=None, autor=None, editora=None, ano_publicacao=None, qtd_copias=None):
+def inicializar_arquivo():
+    if os.path.exists(ARQUIVO):
+        with open(ARQUIVO, 'w') as arquivo:
+            arquivo.write("id,titulo,autor,editora,ano_publicacao,qtd_copias\n")
 
-        if titulo is not None:
-            self.titulo = titulo
-        if autor is not None:
-            self.autor = autor
-        if editora is not None:
-            self.editora = editora
-        if ano_publicacao is not None:
-            self.ano_publicacao = ano_publicacao
-        if qtd_copias is not None:
-            self.qtd_copias = qtd_copias
+def cadastrar_livro(pk_id_livro, titulo, autor, editora, ano_publicacao, qtd_copias):
+    with open(ARQUIVO, 'a') as arquivo:
+        arquivo.write(f"{pk_id_livro},{titulo},{autor},{editora},{ano_publicacao},{qtd_copias}\n")
 
-    def __str__(self):
-        return (f"ID: {self.pk_id_livro}, Título: {self.titulo}, Autor: {self.autor}, "
-                f"Editora: {self.editora}, Ano: {self.ano_publicacao}, Exemplares: {self.qtd_copias}")
+def listar_livros():
+    with open(ARQUIVO, 'r') as arquivo:
+        livros = arquivo.readlines()
+    return livros[1:]
 
+def buscar_livro(campo, valor):
+    with open(ARQUIVO, 'r') as arquivo:
+        livros = arquivo.readlines()
+    return [livro for livro in livros if valor in livro.split(',')[['id', 'titulo', 'autor', 'editora', 'ano_publicacao', 'qtd_copias'].index(campo)]]
 
-class Biblioteca:
+def atualizar_livro(pk_id_livro, **novos_dados):
+    with open(ARQUIVO, 'r') as arquivo:
+        livros = arquivo.readlines()
+    header = livros[0]
+    atualizados = []
+    for livro in livros[1:]:
+        dados = livro.strip().split(',')
+        if dados[0] == str(pk_id_livro):
+            for chave, valor in novos_dados.items():
+                if valor is not None:
+                    indice = ['id', 'titulo', 'autor', 'editora', 'ano_publicacao', 'qtd_copias'].index(chave)
+                    dados[indice] = str(valor)
+            atualizados.append(','.join(dados) + '\n')
+        else:
+            atualizados.append(livro)
+    with open(ARQUIVO, 'w') as arquivo:
+        arquivo.writelines([header] + atualizados)
 
-    def __init__(self):
-        self.catalogo = {}
+def remover_livro(pk_id_livro):
+    with open(ARQUIVO, 'r') as arquivo:
+        livros = arquivo.readlines()
+    header = livros[0]
+    restantes = [livro for livro in livros[1:] if livro.split(',')[0] != str(pk_id_livro)]
+    with open(ARQUIVO, 'w') as arquivo:
+        arquivo.writelines([header] + restantes)
 
-    def cadastrar_livro(self, pk_id_livro, titulo, autor, editora, ano_publicacao, qtd_copias):
-
-        if pk_id_livro in self.catalogo:
-            raise ValueError("Já existe um livro cadastrado com esse ID.")
-        novo_livro = Livro(pk_id_livro, titulo, autor, editora, ano_publicacao, qtd_copias)
-        self.catalogo[pk_id_livro] = novo_livro
-
-    def consultar_livros(self, criterio, valor):
-
-        resultado = [livro for livro in self.catalogo.values() if getattr(livro, criterio, None) == valor]
-        return resultado
-
-    def listar_quantidade(self, pk_id_livro):
-
-        livro = self.catalogo.get(pk_id_livro)
-        if not livro:
-            raise ValueError("Livro não encontrado.")
-        return livro.qtd_copias
-
-    def atualizar_livro(self, pk_id_livro, **kwargs):
-
-        livro = self.catalogo.get(pk_id_livro)
-        if not livro:
-            raise ValueError("Livro não encontrado.")
-        livro.atualizar_informacoes(**kwargs)
-
-    def remover_livro(self, pk_id_livro):
-
-        if pk_id_livro not in self.catalogo:
-            raise ValueError("Livro não encontrado.")
-        del self.catalogo[pk_id_livro]
-
-    def listar_livros(self):
-
-        return [str(livro) for livro in self.catalogo.values()]
-
-    def __str__(self):
-        return "\n".join(str(livro) for livro in self.catalogo.values())
+def quantidade_livro(pk_id_livro):
+    with open(ARQUIVO, 'r') as arquivo:
+        livros = arquivo.readlines()
+    for livro in livros[1:]:
+        dados = livro.strip().split(',')
+        if dados[0] == str(pk_id_livro):
+            return int(dados[5])
+    return 0
