@@ -32,22 +32,34 @@ def salvar_usuarios():
             f.write(linha)
         print("Usuários salvos no arquivo TXT.")
 
-class Usuario:
-    def __init__(self, pk_id_usuario, nome, endereco, telefone, email):
-        self.pk_id_usuario = pk_id_usuario
-        self.nome = nome
-        self.endereco = endereco
-        self.telefone = telefone
-        self.email = email
+# class Usuario:
+#     def __init__(self, pk_id_usuario, nome, endereco, telefone, email):
+#         self.pk_id_usuario = pk_id_usuario
+#         self.nome = nome
+#         self.endereco = endereco
+#         self.telefone = telefone
+#         self.email = email
 
-    def to_dict(self):
-        return {
-            "pk_id_usuario": self.pk_id_usuario,
-            "nome": self.nome,
-            "endereco": self.endereco,
-            "telefone": self.telefone,
-            "email": self.email
-        }
+#     def to_dict(self):
+#         return {
+#             "pk_id_usuario": self.pk_id_usuario,
+#             "nome": self.nome,
+#             "endereco": self.endereco,
+#             "telefone": self.telefone,
+#             "email": self.email
+#         }
+
+
+# Função para criar um novo usuário como dicionário
+def criar_usuario(pk_id_usuario, nome, endereco, telefone, email):
+    return {
+        "pk_id_usuario": pk_id_usuario,
+        "nome": nome,
+        "endereco": endereco,
+        "telefone": telefone,
+        "email": email
+    }
+
 
 def gerar_id_unico():
     while True:
