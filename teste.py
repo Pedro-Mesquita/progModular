@@ -1,6 +1,7 @@
 # Estrutura de diretórios:
 # biblioteca/
 # ├── teste.py
+# ├── conf_testes.py
 # ├── data/
 # │   ├── usuarios.txt
 # │   ├── livros.txt
@@ -12,6 +13,11 @@
 # │   ├── emprestimos.py
 # │   ├── multas.py
 # │   └── utf_converter.py
+# ├── tests/
+# │   ├── test_usuarios.py
+# │   ├── test_livros.py
+# │   ├── test_emprestimos.py
+# │   └── test_multas.py
 
 
 
@@ -20,6 +26,7 @@
 import os
 import random
 from datetime import datetime
+
 
 from modules.multa import *
 from modules.usuarios import *

@@ -18,12 +18,12 @@ def conv_utf8_to_utf32(input_file, output_file):
     except Exception as e:
         print(f"Erro ao converter '{input_file}' para UTF-32: {e}")
 
+
 def conv_utf32_to_utf8(input_file, output_file):
     input_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', input_file)
     output_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', output_file)
     
     with open(input_path, 'rb') as infile, open(output_path, 'w', encoding='utf-8') as outfile:
-        # Skip BOM
         infile.read(4)
         
         while True:
