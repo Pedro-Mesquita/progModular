@@ -9,11 +9,18 @@ emprestimos = {}
 def carrega_emprestimos():
     global emprestimos
     emprestimos = {}
+    
+    # Debug: Checking if the file exists
+    print(f"Checking if the file {caminho_arquivo} exists: {os.path.exists(caminho_arquivo)}")
+    
     if os.path.exists(caminho_arquivo):
         with open(caminho_arquivo, "r") as arquivo:
             for linha in arquivo:
                 partes = linha.strip().split(delimitador)
-
+                
+                # Debug: Print each line after splitting
+                print(f"Processed line: {partes}")
+                
                 emprestimo = {
                     "pk_id_emprestimo": int(partes[0]),
                     "data_emprestimo": partes[1],
@@ -23,8 +30,16 @@ def carrega_emprestimos():
                     "fk_id_usuario": int(partes[5])
                 }
                 
+                # Debug: Print the emprestimo object before adding
+                print(f"Adding emprestimo: {emprestimo}")
+                
                 emprestimos[emprestimo["pk_id_emprestimo"]] = emprestimo
+    
+    # Debug: Print the final state of emprestimos after loading
+    print(f"Global emprestimos updated: {emprestimos}")
+    
     return emprestimos
+
 
 
 def listaEmprestimos():
@@ -48,7 +63,6 @@ def criaEmprestimo(pk_id_emprestimo, data_emprestimo, data_devolucao_real, data_
         "fk_id_livro": fk_id_livro,
         "fk_id_usuario": fk_id_usuario
     }
-
     emprestimos[pk_id_emprestimo] = novo_emprestimo
 
 def excluiEmprestimo(pk_id_emprestimo):
