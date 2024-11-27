@@ -27,12 +27,12 @@ def carrega_emprestimos():
     return emprestimos
 
 
-def listaEmprestimos():
+def lista_emprestimos():
     """Retorna todos os empréstimos armazenados em memória."""
     return list(emprestimos.values())
 
 
-def criaEmprestimo(pk_id_emprestimo, data_emprestimo, data_devolucao_real, data_devolucao_prevista, fk_id_livro, fk_id_usuario):
+def cria_emprestimo(pk_id_emprestimo, data_emprestimo, data_devolucao_real, data_devolucao_prevista, fk_id_livro, fk_id_usuario):
     """Cria um novo empréstimo e o adiciona ao dicionário."""
     if pk_id_emprestimo in emprestimos:
         raise ValueError("Já existe um empréstimo com esse ID.")
@@ -47,7 +47,7 @@ def criaEmprestimo(pk_id_emprestimo, data_emprestimo, data_devolucao_real, data_
     emprestimos[pk_id_emprestimo] = novo_emprestimo
 
 
-def excluiEmprestimo(pk_id_emprestimo):
+def exclui_emprestimo(pk_id_emprestimo):
     """Remove um empréstimo do dicionário."""
     if pk_id_emprestimo in emprestimos:
         del emprestimos[pk_id_emprestimo]
@@ -55,7 +55,7 @@ def excluiEmprestimo(pk_id_emprestimo):
         raise ValueError("Empréstimo não encontrado.")
 
 
-def acabaEmprestimo(pk_id_emprestimo):
+def acaba_emprestimo(pk_id_emprestimo):
     """Finaliza um empréstimo ao registrar a data de devolução real."""
     if pk_id_emprestimo in emprestimos:
         emprestimos[pk_id_emprestimo]["data_devolucao_real"] = datetime.now().strftime("%Y-%m-%d")
@@ -63,7 +63,7 @@ def acabaEmprestimo(pk_id_emprestimo):
         raise ValueError("Empréstimo não encontrado.")
 
 
-def salvaEmprestimos():
+def salva_emprestimos():
     """Persiste os empréstimos do dicionário em memória para o arquivo TXT."""
     with open(caminho_arquivo, "w") as arquivo:
         for emprestimo in emprestimos.values():
