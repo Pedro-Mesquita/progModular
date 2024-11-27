@@ -254,7 +254,7 @@ def menu_principal():
             print("Finalizando sistema...")
             salvar_usuarios()
             salvar_dados() #livros
-            salvaEmprestimos()
+            salva_emprestimos()
             salva_multas()
 
             print("Dados salvos. Sistema finalizado.")

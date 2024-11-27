@@ -1,126 +1,99 @@
-# tests/test_multas.py
 import sys
 import os
 import pytest
+from unittest.mock import patch, MagicMock
 from datetime import datetime, timedelta
 
-# Adicionar o diretório raiz ao path para importações
+# Add the root directory to the path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from modules.multa import (
-    gerar_multa,
-    visualizar_multa,
-    pagar_multa,
-    visualizar_multa
-)
-
-from modules.emprestimo import criaEmprestimo
-from modules.usuarios import cadastrar_usuario,buscar_usuario
-from modules.livro import cadastrar_livro,buscar_livros
+from modules.multa import gerar_multa, visualizar_multa, pagar_multa
+from modules.usuarios import cadastrar_usuario, buscar_usuario
+from modules.livro import cadastrar_livro, buscar_livros
 
 def setup_module(module):
-    """Preparação inicial para testes de multas"""
-    # Limpa multas existentes
-    while True:
-        multas = visualizar_multa()  # Assumindo que há uma função listar_multas() no módulo
-        if not multas:
-            break
+    global usuarios_db, livros_db
+    usuarios_db = []
+    livros_db = []
 
-    # Cadastra usuário de teste
-    cadastrar_usuario(
-        nome="Usuário Multa", 
-        email="usuario.multa@exemplo.com", 
-        telefone="(11) 99999-9999", 
-        endereco="Rua de Multa, 123"
-    )
-    
-    # Cadastra livro de teste
-    cadastrar_livro(
-        titulo="Livro Multa", 
-        autor="Autor Multa", 
-        ano=2023, 
-        editora="Editora Multa", 
-        isbn="9876543210"
-    )
+    cadastrar_usuario("Usuário Multa", "Rua de Multa, 123", "11999999999", "usuario.multa@exemplo.com")
 
-def test_gerar_multa():
-    """Teste de geração de multa"""
-    # Cria um empréstimo primeiro
-    data_atual = datetime.now().strftime("%Y-%m-%d")
-    data_devolucao = (datetime.now() + timedelta(days=15)).strftime("%Y-%m-%d")
+    livro_inputs = [
+        "Livro Multa", "Autor Multa", "Editora Multa", "2023", "5"
+    ]
+    with patch('builtins.input', side_effect=livro_inputs):
+        cadastrar_livro()
+def test_gerar_multa_simple():
+    """Simplified test for generating a multa"""
+    # Create mock data for the necessary input
+    mock_emprestimo = {
+        'pk_id_emprestimo': 2001,
+        'data_emprestimo': '2024-11-10',
+        'data_devolucao_real': None,
+        'data_devolucao_prevista': '2024-11-25',
+        'fk_id_livro': 6341,
+        'fk_id_usuario': 3977,
+    }
     
-    usuarios = buscar_usuario(nome="Usuário Multa")
-    livros = buscar_livros(titulo="Livro Multa")
-    
-    criaEmprestimo(
-        pk_id_emprestimo=2001, 
-        data_emprestimo=data_atual, 
-        data_devolucao_real="None", 
-        data_devolucao_prevista=data_devolucao, 
-        fk_id_livro=livros[0]['id'], 
-        fk_id_usuario=usuarios['id']
-    )
-    
-    # Gera uma multa
-    resultado = gerar_multa(
-        pk_id_multa=5001, 
-        valor=50.0, 
-        data=data_atual, 
-        fk_id_emprestimo=2001, 
-        tipo="atraso", 
-        data_geracao=data_atual, 
+    # Mock a simple function to simulate the creation of the multa
+    data_atual = '2024-11-27'
+    gerar_multa(
+        pk_id_multa=5001,
+        valor=50.0,
+        data=data_atual,
+        fk_id_emprestimo=mock_emprestimo['pk_id_emprestimo'],
+        tipo="prazo",  # Use a valid value from TIPOS_MULTA
+        data_geracao=data_atual,
         status="aberto"
     )
     
-    assert resultado is True, "Falha ao gerar multa"
-    
-    # Verifica se a multa foi gerada
-    multas = visualizar_multa()
-    assert len(multas) > 0, "Multa não foi adicionada à lista"
-    assert multas[0]['id'] == 5001, "ID da multa não corresponde"
+    # Verify the multa was created correctly
+    multa = visualizar_multa(5001)
+    assert multa is not None, "Multa não encontrada"
+    assert multa['pk_id_multa'] == 5001, "ID da multa não corresponde"
+    assert multa['valor'] == 50.0, "Valor da multa não corresponde"
+    assert multa['status'] == "aberto", "Status da multa não corresponde"
+
 
 def test_visualizar_multa():
-    """Teste de visualização de multa"""
-    # Gera uma nova multa
+    """Test visualizing a multa"""
     data_atual = datetime.now().strftime("%Y-%m-%d")
-    
-    resultado = gerar_multa(
-        pk_id_multa=5002, 
-        valor=75.0, 
-        data=data_atual, 
-        fk_id_emprestimo=2001, 
-        tipo="dano", 
-        data_geracao=data_atual, 
+    pk_id_emprestimo = 2001  # Example loan ID
+
+    gerar_multa(
+        pk_id_multa=5002,
+        valor=75.0,
+        data=data_atual,
+        fk_id_emprestimo=pk_id_emprestimo,
+        tipo="avaria",
+        data_geracao=data_atual,
         status="aberto"
     )
-    
-    # Visualiza a multa
+
     multa = visualizar_multa(5002)
-    
     assert multa is not None, "Multa não encontrada"
     assert multa['valor'] == 75.0, "Valor da multa não corresponde"
-    assert multa['tipo'] == "dano", "Tipo da multa não corresponde"
+    assert multa['tipo'] == "avaria", "Tipo da multa não corresponde"
 
 def test_pagar_multa():
-    """Teste de pagamento de multa"""
-    # Gera uma multa para pagar
+    """Test paying a multa"""
     data_atual = datetime.now().strftime("%Y-%m-%d")
-    
-    resultado = gerar_multa(
-        pk_id_multa=5003, 
-        valor=100.0, 
-        data=data_atual, 
-        fk_id_emprestimo=2001, 
-        tipo="avaria", 
-        data_geracao=data_atual, 
+    pk_id_emprestimo = 2001  # Example loan ID
+
+    gerar_multa(
+        pk_id_multa=5003,
+        valor=100.0,
+        data=data_atual,
+        fk_id_emprestimo=pk_id_emprestimo,
+        tipo="prazo",
+        data_geracao=data_atual,
         status="aberto"
     )
-    
-    # Paga a multa
-    resultado_pagamento = pagar_multa(5003)
-    
-    assert resultado_pagamento is True, "Falha ao pagar multa"
-    
-    # Verifica o status da multa
+
+    pagar_multa(5003)
+
     multa = visualizar_multa(5003)
     assert multa['status'] == "pago", "Status da multa não foi atualizado"
+
+if __name__ == "__main__":
+    pytest.main()

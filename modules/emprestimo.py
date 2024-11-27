@@ -28,8 +28,15 @@ def carrega_emprestimos():
 
 
 def lista_emprestimos():
-    """Retorna todos os empréstimos armazenados em memória."""
-    return list(emprestimos.values())
+    for emprestimo in emprestimos.values():
+        print(f"ID: {emprestimo['pk_id_emprestimo']}")
+        print(f"Data Emprestimo: {emprestimo['data_emprestimo']}")
+        print(f"Data Devolucao Real: {emprestimo['data_devolucao_real']}")
+        print(f"Data Devolucao Prevista: {emprestimo['data_devolucao_prevista']}")
+        print(f"ID Livro: {emprestimo['fk_id_livro']}")
+        print(f"ID Usuario: {emprestimo['fk_id_usuario']}")
+        print("----------")
+
 
 
 def cria_emprestimo(pk_id_emprestimo, data_emprestimo, data_devolucao_real, data_devolucao_prevista, fk_id_livro, fk_id_usuario):
