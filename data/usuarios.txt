@@ -1,0 +1,6 @@
+2265;João da Silva;Rua Principal, 123;21999999999;joao.silva@gmail.com
+4551;Maria Souza;Avenida Secundária, 456;21888888888;maria.souza@exemplo.com
+8799;Pedro Silva;Travessa Central, 790;31777778888;pedro.silva@exemplo.com
+5363;Ana Oliveira;Praça Principal, 321;41666666666;ana.oliveira@exemplo.com
+7276;Usuario 1;Endereco 1;11678653531;usuario1@exemplo.com
+2805;Usuario 2;Endereco 2;22678653531;usuario2@exemplo.com

@@ -76,27 +76,46 @@ def listar_usuarios():
         for usuario in usuarios_db:
             print(usuario)
 
-def buscar_usuario():
-    termo_busca = input("Digite o termo de busca (nome, endereço, email ou telefone): ").lower()
+# def buscar_usuario(termo_busca):
+#     #termo_busca = input("Digite o termo de busca (nome, endereço, email ou telefone): ").lower()
+#     usuarios_filtrados = [
+#         usuario for usuario in usuarios_db
+#         if termo_busca in usuario['nome'].lower() or
+#            termo_busca in usuario['endereco'].lower() or
+#            termo_busca in usuario['email'].lower() or
+#            termo_busca in str(usuario['telefone'])
+#     ]
+
+#     if usuarios_filtrados:
+#         for usuario in usuarios_filtrados:
+#             print(usuario)
+            
+#     else:
+#         print("Nenhum usuário encontrado com o termo informado.")
+
+def buscar_usuario(termo_busca):
     usuarios_filtrados = [
         usuario for usuario in usuarios_db
-        if termo_busca in usuario['nome'].lower() or
-           termo_busca in usuario['endereco'].lower() or
-           termo_busca in usuario['email'].lower() or
+        if termo_busca.lower() in usuario['nome'].lower() or
+           termo_busca.lower() in usuario['endereco'].lower() or
+           termo_busca.lower() in usuario['email'].lower() or
            termo_busca in str(usuario['telefone'])
     ]
 
     if usuarios_filtrados:
         for usuario in usuarios_filtrados:
             print(usuario)
+        return usuarios_filtrados
     else:
         print("Nenhum usuário encontrado com o termo informado.")
+        return []
 
-def cadastrar_usuario():
-    nome = input("Digite o nome do usuário: ")
-    endereco = input("Digite o endereço do usuário: ")
-    telefone = input("Digite o telefone do usuário: ")
-    email = input("Digite o email do usuário: ")
+
+def cadastrar_usuario(nome,endereco,telefone,email):
+    # nome = input("Digite o nome do usuário: ")
+    # endereco = input("Digite o endereço do usuário: ")
+    # telefone = input("Digite o telefone do usuário: ")
+    # email = input("Digite o email do usuário: ")
 
     
 
@@ -110,16 +129,16 @@ def cadastrar_usuario():
     usuarios_db.append(usuario)
     print("Usuário cadastrado com sucesso!")
 
-def editar_usuario():
-    pk_id_usuario = int(input("Digite o ID do usuário a ser editado: "))
+def editar_usuario(pk_id_usuario,nome,endereco,telefone,email):
+    #pk_id_usuario = int(input("Digite o ID do usuário a ser editado: "))
     usuario = next((u for u in usuarios_db if u['pk_id_usuario'] == pk_id_usuario), None)
 
     if usuario:
         print("Pressione enter para manter o valor atual")
-        nome = input(f"Digite o novo nome (atual: {usuario['nome']}): ") or usuario['nome']
-        endereco = input(f"Digite o novo endereço (atual: {usuario['endereco']}): ") or usuario['endereco']
-        telefone = input(f"Digite o novo telefone (atual: {usuario['telefone']}): ") or usuario['telefone']
-        email = input(f"Digite o novo email (atual: {usuario['email']}): ") or usuario['email']
+        # nome = input(f"Digite o novo nome (atual: {usuario['nome']}): ") or usuario['nome']
+        # endereco = input(f"Digite o novo endereço (atual: {usuario['endereco']}): ") or usuario['endereco']
+        # telefone = input(f"Digite o novo telefone (atual: {usuario['telefone']}): ") or usuario['telefone']
+        # email = input(f"Digite o novo email (atual: {usuario['email']}): ") or usuario['email']
 
         usuario.update({
             'nome': nome,
@@ -131,14 +150,14 @@ def editar_usuario():
     else:
         print("Usuário não encontrado.")
 
-def excluir_usuario():
-    pk_id_usuario = int(input("Digite o ID do usuário a ser excluído: "))
+def excluir_usuario(pk_id_usuario):
+    #pk_id_usuario = int(input("Digite o ID do usuário a ser excluído: "))
     global usuarios_db
     usuarios_db = [usuario for usuario in usuarios_db if usuario['pk_id_usuario'] != pk_id_usuario]
     print(f"Usuário com ID={pk_id_usuario} excluído.")
 
-def ver_informacoes_usuario():
-    pk_id_usuario = int(input("Digite o ID do usuário: "))
+def ver_informacoes_usuario(pk_id_usuario):
+    #pk_id_usuario = int(input("Digite o ID do usuário: "))
     usuario = next((u for u in usuarios_db if u['pk_id_usuario'] == pk_id_usuario), None)
 
     if usuario:
@@ -172,17 +191,32 @@ def menu_principal():
         print("\n")
 
         if opcao == '1':
-            cadastrar_usuario()
+            nome = input("Digite o nome do usuário: ")
+            endereco = input("Digite o endereço do usuário: ")
+            telefone = input("Digite o telefone do usuário: ")
+            email = input("Digite o email do usuário: ")
+            
+            cadastrar_usuario(nome,endereco,telefone,email)
         elif opcao == '2':
-            excluir_usuario()
+            pk_id_usuario1 = int(input("Digite o ID do usuário a ser excluído: "))
+            excluir_usuario(pk_id_usuario1)
         elif opcao == '3':
-            buscar_usuario()
+            termo_busca = input("Digite o termo de busca (nome, endereço, email ou telefone): ").lower()
+            buscar_usuario(termo_busca)
         elif opcao == '4':
             listar_usuarios()
         elif opcao == '5':
-            ver_informacoes_usuario()
+            pk_id_usuario3 = int(input("Digite o ID do usuário: "))
+            ver_informacoes_usuario(pk_id_usuario3)
         elif opcao == '6':
-            editar_usuario()
+            pk_id_usuario2 = int(input("Digite o ID do usuário a ser editado: "))
+            usuario = next((u for u in usuarios_db if u['pk_id_usuario'] == pk_id_usuario2), None)
+            nome2 = input(f"Digite o novo nome (atual: {usuario['nome']}): ") or usuario['nome']
+            endereco2 = input(f"Digite o novo endereço (atual: {usuario['endereco']}): ") or usuario['endereco']
+            telefone2 = input(f"Digite o novo telefone (atual: {usuario['telefone']}): ") or usuario['telefone']
+            email2 = input(f"Digite o novo email (atual: {usuario['email']}): ") or usuario['email']
+
+            editar_usuario(pk_id_usuario2,nome2,endereco2,telefone2,email2)
         elif opcao == '7':
             finalizar_sessao()
             break
