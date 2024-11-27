@@ -1,5 +1,5 @@
 import os
-import livro  # Importa o módulo principal
+import livro
 
 ARQUIVO_TESTE = "test_livros.txt"
 
