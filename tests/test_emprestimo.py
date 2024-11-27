@@ -1,163 +1,195 @@
-# tests/test_emprestimos.py
 import sys
 import os
 import pytest
-from datetime import datetime, timedelta
-# Adicionar o diretório raiz ao path para importações
+from datetime import datetime
+from io import StringIO
+from contextlib import redirect_stdout
+from unittest.mock import mock_open, patch
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 from modules.emprestimo import (
     criaEmprestimo,
-    listaEmprestimos,
+    emprestimos,
+    excluiEmprestimo,
     acabaEmprestimo,
-    excluiEmprestimo
+    salvaEmprestimos,
+    listaEmprestimos,
+    carrega_emprestimos
 )
-from modules.usuarios import cadastrar_usuario,buscar_usuario
-from modules.livro import cadastrar_livro,buscar_livros
-def setup_module(module):
-    """Preparação inicial para testes de empréstimos"""
-    # Limpa empréstimos existentes
-    while True:
-        emprestimos = listaEmprestimos()
-        if not emprestimos:
-            break
-        excluiEmprestimo(emprestimos[0]['id'])
-    
-    # Cadastra usuário de teste
-    cadastrar_usuario(
-        nome="Usuário Teste", 
-        email="usuario.teste@exemplo.com", 
-        telefone="(11) 99999-9999", 
-        endereco="Rua de Teste, 123"
-    )
-    
-    # Cadastra livro de teste
-    cadastrar_livro(
-        titulo="Livro Teste", 
-        autor="Autor Teste", 
-        ano=2023, 
-        editora="Editora Teste", 
-        isbn="1234567890"
-    )
-def test_cria_emprestimo():
-    """Teste de criação de empréstimo"""
-    data_atual = datetime.now().strftime("%Y-%m-%d")
-    data_devolucao = (datetime.now() + timedelta(days=15)).strftime("%Y-%m-%d")
-    
-    # Busca o usuário e livro de teste
-    usuarios = cadastrar_usuario(
-        nome="Usuário Empréstimo", 
-        email="usuario.emprestimo@exemplo.com", 
-        telefone="(11) 88888-8888", 
-        endereco="Rua de Empréstimo, 456"
-    )
-    
-    livros = buscar_livros(titulo="Livro Teste")
-    
-    resultado = criaEmprestimo(
-        pk_id_emprestimo=1001, 
-        data_emprestimo=data_atual, 
-        data_devolucao_real="None", 
-        data_devolucao_prevista=data_devolucao, 
-        fk_id_livro=livros[0]['id'], 
-        fk_id_usuario=usuarios['id']
-    )
-    
-    assert resultado is True, "Falha ao criar empréstimo"
-    
-    # Verifica se o empréstimo foi criado
-    emprestimos = listaEmprestimos()
-    assert len(emprestimos) > 0, "Empréstimo não foi adicionado à lista"
-    assert emprestimos[0]['id'] == 1001, "ID do empréstimo não corresponde"
 
-def test_lista_emprestimos():
-    """Teste de listagem de empréstimos"""
-    # Cria alguns empréstimos
-    data_atual = datetime.now().strftime("%Y-%m-%d")
-    data_devolucao = (datetime.now() + timedelta(days=15)).strftime("%Y-%m-%d")
+caminho_arquivo = "data/emprestimos.txt"
+
+@pytest.fixture
+def setup_emprestimos():
+    emprestimos.clear()  
+    yield
+    emprestimos.clear()  
+
+    if os.path.exists(caminho_arquivo):
+        os.remove(caminho_arquivo)
+    if os.path.exists("data"):
+        os.rmdir("data")
+
+def test_cria_emprestimo(setup_emprestimos):
+    pk_id_emprestimo = 1
+    data_emprestimo = "2024-11-25"
+    data_devolucao_real = None
+    data_devolucao_prevista = "2024-12-25"
+    fk_id_livro = 101
+    fk_id_usuario = 202
+
+    criaEmprestimo(pk_id_emprestimo, data_emprestimo, data_devolucao_real, data_devolucao_prevista, fk_id_livro, fk_id_usuario)
+
+    expected_emprestimo = {
+        "pk_id_emprestimo": pk_id_emprestimo,
+        "data_emprestimo": data_emprestimo,
+        "data_devolucao_real": data_devolucao_real,
+        "data_devolucao_prevista": data_devolucao_prevista,
+        "fk_id_livro": fk_id_livro,
+        "fk_id_usuario": fk_id_usuario
+    }
+
+    assert pk_id_emprestimo in emprestimos
+    assert emprestimos[pk_id_emprestimo] == expected_emprestimo
+
+def test_exclui_emprestimo(setup_emprestimos):
+    pk_id_emprestimo = 1
+    data_emprestimo = "2024-11-25"
+    data_devolucao_real = None
+    data_devolucao_prevista = "2024-12-25"
+    fk_id_livro = 101
+    fk_id_usuario = 202
+
+    criaEmprestimo(pk_id_emprestimo, data_emprestimo, data_devolucao_real, data_devolucao_prevista, fk_id_livro, fk_id_usuario)
+    assert pk_id_emprestimo in emprestimos
+    excluiEmprestimo(pk_id_emprestimo)
+    assert pk_id_emprestimo not in emprestimos
+
+def test_exclui_emprestimo_nonexistent_id(setup_emprestimos):
+    assert not emprestimos
+    pk_id_emprestimo = 999
+    excluiEmprestimo(pk_id_emprestimo)
+    assert not emprestimos
+
+def test_acaba_emprestimo(setup_emprestimos):
+    pk_id_emprestimo = 1
+    data_emprestimo = "2024-11-25"
+    data_devolucao_real = None
+    data_devolucao_prevista = "2024-12-25"
+    fk_id_livro = 101
+    fk_id_usuario = 202
+
+    criaEmprestimo(pk_id_emprestimo, data_emprestimo, data_devolucao_real, data_devolucao_prevista, fk_id_livro, fk_id_usuario)
+    assert emprestimos[pk_id_emprestimo]["data_devolucao_real"] is None
+    acabaEmprestimo(pk_id_emprestimo)
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    assert emprestimos[pk_id_emprestimo]["data_devolucao_real"] == current_date
+
+def test_acaba_emprestimo_nonexistent_id(setup_emprestimos):
+    assert not emprestimos
+    pk_id_emprestimo = 999
+    acabaEmprestimo(pk_id_emprestimo)
+    assert not emprestimos
+
+def test_salva_emprestimos_txt(setup_emprestimos):
+    assert not os.path.exists(caminho_arquivo), f"File already exists: {caminho_arquivo}"
+
+    emprestimos_data = [
+        {
+            "pk_id_emprestimo": 1,
+            "data_emprestimo": "2024-11-25",
+            "data_devolucao_real": None,
+            "data_devolucao_prevista": "2024-12-25",
+            "fk_id_livro": 101,
+            "fk_id_usuario": 202,
+        },
+        {
+            "pk_id_emprestimo": 2,
+            "data_emprestimo": "2024-11-26",
+            "data_devolucao_real": "2024-12-01",
+            "data_devolucao_prevista": "2024-12-30",
+            "fk_id_livro": 102,
+            "fk_id_usuario": 203,
+        },
+    ]
+
+    os.makedirs(os.path.join(root_path, "data"), exist_ok=True)
+
+    for emprestimo in emprestimos_data:
+        criaEmprestimo(
+            emprestimo["pk_id_emprestimo"],
+            emprestimo["data_emprestimo"],
+            emprestimo["data_devolucao_real"],
+            emprestimo["data_devolucao_prevista"],
+            emprestimo["fk_id_livro"],
+            emprestimo["fk_id_usuario"],
+        )
+    salvaEmprestimos()
+
+    assert os.path.exists(os.path.join(root_path, "data", "emprestimos.txt")), f"File not found: {os.path.join(root_path, 'data', 'emprestimos.txt')}"
+    with open(os.path.join(root_path, "data", "emprestimos.txt"), "r") as arquivo:
+        lines = arquivo.readlines()
+    assert len(lines) == len(emprestimos_data), f"Expected {len(emprestimos_data)} lines, but found {len(lines)}"
+    for i, emprestimo in enumerate(emprestimos_data):
+        expected_line = (
+            f"{emprestimo['pk_id_emprestimo']},{emprestimo['data_emprestimo']},"
+            f"{emprestimo['data_devolucao_real']},{emprestimo['data_devolucao_prevista']},"
+            f"{emprestimo['fk_id_livro']},{emprestimo['fk_id_usuario']}\n"
+        )
+        assert lines[i] == expected_line, f"Mismatch at line {i+1}: {lines[i]} != {expected_line}"
+
+
+def test_listaEmprestimos(setup_emprestimos):
+    criaEmprestimo(1, "2024-11-25", None, "2024-12-25", 101, 202)
+    criaEmprestimo(2, "2024-11-26", "2024-12-01", "2024-12-30", 102, 203)
     
-    usuarios = buscar_usuario(nome="Usuário Empréstimo")
-    livros = buscar_livros(titulo="Livro Teste")
-    
-    criaEmprestimo(
-        pk_id_emprestimo=1002, 
-        data_emprestimo=data_atual, 
-        data_devolucao_real="None", 
-        data_devolucao_prevista=data_devolucao, 
-        fk_id_livro=livros[0]['id'], 
-        fk_id_usuario=usuarios['id']
+    expected_output = (
+        "ID: 1\n"
+        "Data Emprestimo: 2024-11-25\n"
+        "Data Devolucao Real: None\n"
+        "Data Devolucao Prevista: 2024-12-25\n"
+        "ID Livro: 101\n"
+        "ID Usuario: 202\n"
+        "----------\n"
+        "ID: 2\n"
+        "Data Emprestimo: 2024-11-26\n"
+        "Data Devolucao Real: 2024-12-01\n"
+        "Data Devolucao Prevista: 2024-12-30\n"
+        "ID Livro: 102\n"
+        "ID Usuario: 203\n"
+        "----------\n"
     )
+
+    f = StringIO()
+    with redirect_stdout(f):
+        listaEmprestimos()
+    output = f.getvalue()
+    assert output == expected_output
+
+
+def test_carrega_emprestimos_with_mocked_file():
+    mock_file_content = '1,2024-11-25,None,2024-12-25,101,202\n2,2024-11-26,2024-12-01,2024-12-30,102,203\n'
     
-    criaEmprestimo(
-        pk_id_emprestimo=1003, 
-        data_emprestimo=data_atual, 
-        data_devolucao_real="None", 
-        data_devolucao_prevista=data_devolucao, 
-        fk_id_livro=livros[0]['id'], 
-        fk_id_usuario=usuarios['id']
-    )
+    with patch("builtins.open", mock_open(read_data=mock_file_content)):
+        result = carrega_emprestimos() 
     
-    # Lista empréstimos
-    emprestimos = listaEmprestimos()
-    
-    assert len(emprestimos) >= 3, "Número de empréstimos não corresponde ao esperado"
-def test_acaba_emprestimo():
-    """Teste de finalização de empréstimo"""
-    # Busca um empréstimo existente
-    emprestimos = listaEmprestimos()
-    emprestimo = emprestimos[0]
-    
-    # Finaliza o empréstimo
-    resultado = acabaEmprestimo(emprestimo['id'])
-    
-    assert resultado is True, "Falha ao finalizar empréstimo "
-        # Verifica se o empréstimo foi finalizado
-    emprestimos_atualizados = listaEmprestimos()
-    emprestimo_finalizado = next(
-        (e for e in emprestimos_atualizados if e['id'] == emprestimo['id']),
-        None
-    )
-    
-    assert emprestimo_finalizado is not None, "Empréstimo não encontrado após finalização"
-    assert emprestimo_finalizado['data_devolucao_real'] != "None", "Data de devolução real não foi atualizada"
-    assert emprestimo_finalizado['data_devolucao_real'] == datetime.now().strftime("%Y-%m-%d"), "Data de devolução real está incorreta"
-    
-def test_exclui_emprestimo():
-    """Teste de exclusão de empréstimo"""
-    # Cria um novo empréstimo para teste de exclusão
-    data_atual = datetime.now().strftime("%Y-%m-%d")
-    data_devolucao = (datetime.now() + timedelta(days=15)).strftime("%Y-%m-%d")
-    
-    usuarios = buscar_usuario(nome="Usuário Empréstimo")
-    livros = buscar_livros(titulo="Livro Teste")
-    
-    criaEmprestimo(
-        pk_id_emprestimo=1004, 
-        data_emprestimo=data_atual, 
-        data_devolucao_real="None", 
-        data_devolucao_prevista=data_devolucao, 
-        fk_id_livro=livros[0]['id'], 
-        fk_id_usuario=usuarios['id']
-    )
-    
-    # Verifica que o empréstimo foi adicionado
-    emprestimos = listaEmprestimos()
-    novo_emprestimo = next(
-        (e for e in emprestimos if e['id'] == 1004),
-        None
-    )
-    
-    assert novo_emprestimo is not None, "Empréstimo de teste para exclusão não encontrado"
-    
-    # Exclui o empréstimo
-    resultado = excluiEmprestimo(novo_emprestimo['id'])
-    
-    assert resultado is True, "Falha ao excluir empréstimo"
-    
-    # Verifica se o empréstimo foi removido
-    emprestimos_atualizados = listaEmprestimos()
-    emprestimo_excluido = next(
-        (e for e in emprestimos_atualizados if e['id'] == novo_emprestimo['id']),
-        None
-    )
-    
-    assert emprestimo_excluido is None, "Empréstimo não foi excluído corretamente"
+    expected_emprestimos = {
+        1: {
+            "pk_id_emprestimo": 1,
+            "data_emprestimo": "2024-11-25",
+            "data_devolucao_real": None,
+            "data_devolucao_prevista": "2024-12-25",
+            "fk_id_livro": 101,
+            "fk_id_usuario": 202
+        },
+        2: {
+            "pk_id_emprestimo": 2,
+            "data_emprestimo": "2024-11-26",
+            "data_devolucao_real": "2024-12-01",
+            "data_devolucao_prevista": "2024-12-30",
+            "fk_id_livro": 102,
+            "fk_id_usuario": 203
+        }
+    }
+    assert result == expected_emprestimos, f"Expected {expected_emprestimos}, but got {result}"
