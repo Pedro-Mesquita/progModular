@@ -105,7 +105,7 @@ def remover_livro(pk_id_livro):
     header = livros[0]
     restantes = [livro for livro in livros[1:] if livro.split(',')[0] != str(pk_id_livro)]
 
-    if len(restantes) == len(livros) - 1:
+    if len(restantes) < len(livros) - 1:
         with open(ARQUIVO, 'w') as arquivo:
             arquivo.writelines([header] + restantes)
         return True
